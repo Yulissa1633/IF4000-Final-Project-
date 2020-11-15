@@ -25,7 +25,7 @@ cmptrue:bl	myrand	@ lee número aleatorio
 	ldr	r0, =var1	@ pone cadena de texto en r1
 	bl	printf	@ llama a la función printf
 	subs	r4, r4, #1	@ decremento contador	
-	b	cmp true
+	b	cmptrue
 	pop	{r4, r5}	@ recupera registros y sale
 
 myrand:	ldr	r1, =seed	@ leo puntero semilla
