@@ -18,15 +18,14 @@ main:	push	{r4, r5}	@ salva registros
 	mov	r4, #6	@ inicializa contador del bucle
 
 bucle:	cmp	r4, #0	@ si llega a cero, sale
-	jp	cmptrue
-	jmp	end
+	bne	end
 	
 cmptrue:bl	myrand	@ lee número aleatorio
 	mov	r1, r0	@ pasa valor a r1
 	ldr	r0, =var1	@ pone cadena de texto en r1
 	bl	printf	@ llama a la función printf
 	subs	r4, r4, #1	@ decremento contador	
-	jmp	cmp true
+	b	cmp true
 	pop	{r4, r5}	@ recupera registros y sale
 
 myrand:	ldr	r1, =seed	@ leo puntero semilla
