@@ -12,19 +12,19 @@ const2:	.word	12345
 .global main
 .text
 
-main:	push	{r4, r5}	@ salva registros
+main:	push	r4	@ salva registros
 	mov	r0, #42	@ llama a mysrand con parámetro 42
 	bl	mysrand
-	mov	r4, #6	@ inicializa contador del bucle
+	mov	r4, #5	@ inicializa contador del bucle
 
-bucle:	cmp	r4, #0	@ si llega a cero, sale
-	bhi	end
-	bl	myrand	@ lee número aleatorio
+bucle:	bl	myrand	@ lee número aleatorio
 	mov	r1, r0	@ pasa valor a r1
-	ldr	r0, =var1	@ pone cadena de texto en r1
+	ldr	r0, =var1	@ pone cadena de texto en r0
 	bl	printf	@ llama a la función printf
-	subs	r4, r4, #1	@ decremento contador	
-	b	bucle
+	subs	r4, r4, #1	@ decremento contador
+	cmp	r4, #0	
+	bne	bucle
+	b	end	
 
 myrand:	ldr	r1, =seed	@ leo puntero semilla
 	ldr	r0, [r1]	@ leo valor de semilla
@@ -39,7 +39,5 @@ myrand:	ldr	r1, =seed	@ leo puntero semilla
 mysrand: ldr	r1, = seed	/*"seed >> 16 y 0x7 fff (evita AND)"*/
 	 str	r0, [r1]
 	 bx	lr
-end:	pop	{r4, r5}	@ recupera registros y sale
+end: 	pop	r4	@ recupera registros y sale
 	bx	lr
-
-
