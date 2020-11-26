@@ -23,8 +23,8 @@ exit_str:       .ascii	"Programa terminado.\n"
 main:		bl _seedrand            @ Toma el método seedrand
 		mov R0, #1              @ Inicializa índice de la variable
 
-writeloop:	cmp R0, #5           @ Revisa que se haga la iteración
-		beq writedone           @ Termina el ciclo si está listo
+writeloop:	cmp R0, #2048           @ Revisa que se haga la iteración
+		beq readdone           @ Termina el ciclo si está listo
 	    	ldr R1, =randarray      @ Busca el arreglo
 	    	lsl R2, R0, #2          @ Multiplica el índice * 4 para tener el desplazamiento del arreglo
 	    	add R2, R1, R2          @ Pasa el elemento a R2
@@ -35,51 +35,9 @@ writeloop:	cmp R0, #5           @ Revisa que se haga la iteración
 	    	str R0, [R2]            @ Escribe randarray[i] 
 	    	pop {R0}                @ Restaura iterator
 	    	add R0, R0, #1          @ Incrementa ínidce
-	    	b   writeloop           @ Vuelve al ciclo
+	    	b   readdone           @ Vuelve al ciclo
 
-writedone:	mov R0, #1              @ Inicializa índice de la variable
-
-readloop:	cmp R0, #5           @ Revisa que se haga la iteración
-		beq bsort_next            @ Termina el ciclo si está listo
-		ldr R1, =randarray      @ Busca el arreglo
-		lsl R2, R0, #2          @ Multiplica el índice * 4 para tener el desplazamiento del arreglo
-		add R2, R1, R2          @ Pasa el elemento a R2
-		ldr R1, [R2]            @ Lee lo que tiene el arreglo
-		push {R0}               @ Respaldo del registro antes de llamar al procedimiento
-		push {R1}               @ Respaldo del registro antes de llamar al procedimiento
-		push {R2}               @ Respaldo del registro antes de llamar al procedimiento
-		mov R2, R1              @ Mueve el valor que tiene el arreglo a R2 para imprimirlo
-		mov R1, R0              @ Mueve el ínidice del arreglo a R1 para imprimirlo
-		bl  _printf             @ Llama al procedimiento que imprime
-		pop {R2}                @ Restaura registro
-		pop {R1}                @ Restaura registro
-		pop {R0}		@ Restaura registro
-		add R0, R0, #1          @ Incrementa el índice
-		b   readloop            @ Vuelve al ciclo
-
-		    /*R0 = Tamaño del arreglo, 
-		    R1 = Ubicación del arreglo*/
-
-bsort_next:	push {R0-R6, LR}
-		ldr R1, =randarray
-		mov R0, #5
-		mov R2,#0	@ R2 = Número del elemento actual
-                mov R6,#0       @ R6 = Contador 
-
-bsort_loop:	add R3,R2,#1	@ R3 = Siguente número
-                cmp R3,R1	@ Revisa final del arreglo
-		bge bsort_check	@ Cuando llega al final, revisa cambios
-		ldr R4,[R0,R2,LSL #2]	@ R4 = Valor del elemento actual
-		ldr R5,[R0,R3,LSL #2]	@ R5 = Valor del siguiente elemento
-		cmp R4,R5	@ Compara los valores de los elementos
-    		strgt R5,[R0,R2,LSL #2]	@ Si R4 > R5, almacena valor actual en el siguiente
-    		strgt R4,[R0,R3,LSL #2]	@ Si R4 > R5, almacena el siguiente valor en el actual
-    		addgt R6,R6,#1	@ Si R4 > R5, Incrementa contador
-    		mov R2,R3	@ Avanza al siguiente elemento 
-    		b bsort_loop 	@ Vuelve al ciclo
-
-readdone:    	pop {R0-R6,PC}
-		b _exit                 @ Sale si está listo
+readdone:    	b bsort_next            @ Sale si está listo
     
 _exit:  	mov R7, #4              
 	    	mov R0, #1              
@@ -105,7 +63,49 @@ _getrand:    	push {LR}               @ Respaldo al retorno
 	    	bl rand                 @ Toma el número aleatorio
 	    	pop {PC}                @ Retorna 
 
+		    /*R0 = Ubicación del arreglo, 
+		    R1 = Tamaño del arreglo*/
+
+bsort_next:	push {R0-R6,LR}	 @ Salvar registros	
+		mov R2,#1	@ R2 = Número del elemento actual
+                mov R6,#0       @ R6 = Contador
+		ldr R0, =randarray
+		mov R1, #2048
+
+bsort_loop:     add R3,R2,#1	@ R3 = Siguente número
+                cmp R3,R1	@ Revisa final del arreglo
+		bge bsort_check	@ Cuando llega al final, revisa cambios
+		ldr R4,[R0,R2,LSL #2]	@ R4 = Valor del elemento actual
+		ldr R5,[R0,R3,LSL #2]	@ R5 = Valor del siguiente elemento
+		cmp R4,R5	@ Compara los valores de los elementos
+    		strgt R5,[R0,R2,LSL #2]	@ Si R4 > R5, almacena valor actual en el siguiente
+    		strgt R4,[R0,R3,LSL #2]	@ Si R4 > R5, almacena el siguiente valor en el actual
+    		addgt R6,R6,#1	@ Si R4 > R5, Incrementa contador
+    		mov R2,R3	@ Avanza al siguiente elemento 
+    		b bsort_loop 	@ Fin del ciclo
+
 bsort_check:	cmp R6,#0	@ Revisa cambios, ¿han habido cambios en esta iteración?
     		subgt R1,R1,#1	@ En el siguiente ciclo omite el último valor
-    		bgt bsort_next	@ Se hace de nuevo si hubieron cambios		
-		b readdone
+    		bgt bsort_next	@ Se hace de nuevo si hubieron cambios
+		
+writedone:	mov R0, #1              @ Inicializa índice de la variable
+
+readloop:	cmp R0, #2048           @ Revisa que se haga la iteración
+		beq bsort_done          @ Termina el ciclo si está listo
+		ldr R1, =randarray      @ Busca el arreglo
+		lsl R2, R0, #2          @ Multiplica el índice * 4 para tener el desplazamiento del arreglo
+		add R2, R1, R2          @ Pasa el elemento a R2
+		ldr R1, [R2]            @ Lee lo que tiene el arreglo
+		push {R0}               @ Respaldo del registro antes de llamar al procedimiento
+		push {R1}               @ Respaldo del registro antes de llamar al procedimiento
+		push {R2}               @ Respaldo del registro antes de llamar al procedimiento
+		mov R2, R1              @ Mueve el valor que tiene el arreglo a R2 para imprimirlo
+		mov R1, R0              @ Mueve el ínidice del arreglo a R1 para imprimirlo
+		bl  _printf             @ Llama al procedimiento que imprime
+		pop {R2}                @ Restaura registro
+		pop {R1}                @ Restaura registro
+		pop {R0}		@ Restaura registro
+		add R0, R0, #1          @ Incrementa el índice
+		b   readloop            @ Vuelve al ciclo
+
+bsort_done:     b _exit
