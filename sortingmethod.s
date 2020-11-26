@@ -3,9 +3,9 @@
 
 	/*R0 = Ubicación del arreglo, R1 = Tamaño del arreglo*/
 
-		push {R0-R6,LR}	 @ Salvar registros
+bsort_next:	push {R0-R6,LR}	 @ Salvar registros
 
-bsort_next:	mov R2,#0	@ R2 = Número del elemento actual
+bsort_next1:	mov R2,#0	@ R2 = Número del elemento actual
                 mov R6,#0       @ R6 = Contador
 
 bsort_loop:     add R3,R2,#1	@ R3 = Siguente número
@@ -22,6 +22,6 @@ bsort_loop:     add R3,R2,#1	@ R3 = Siguente número
 
 bsort_check:	cmp R6,#0	@ Revisa cambios, ¿han habido cambios en esta iteración?
     		subgt R1,R1,#1	@ En el siguiente ciclo omite el último valor
-    		bgt bsort_next	@ Se hace de nuevo si hubieron cambios
+    		bgt bsort_loop	@ Se hace de nuevo si hubieron cambios
 
 bsort_done:     pop {R0-R6,PC}	@ Saca los registros y sale

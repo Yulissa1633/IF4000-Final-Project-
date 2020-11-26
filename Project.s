@@ -24,7 +24,7 @@ main:		bl _seedrand            @ Toma el método seedrand
 		mov R0, #1              @ Inicializa índice de la variable
 
 writeloop:	cmp R0, #2048           @ Revisa que se haga la iteración
-		beq readdone           @ Termina el ciclo si está listo
+		beq writedone1           @ Termina el ciclo si está listo
 	    	ldr R1, =randarray      @ Busca el arreglo
 	    	lsl R2, R0, #2          @ Multiplica el índice * 4 para tener el desplazamiento del arreglo
 	    	add R2, R1, R2          @ Pasa el elemento a R2
@@ -35,7 +35,27 @@ writeloop:	cmp R0, #2048           @ Revisa que se haga la iteración
 	    	str R0, [R2]            @ Escribe randarray[i] 
 	    	pop {R0}                @ Restaura iterator
 	    	add R0, R0, #1          @ Incrementa ínidce
-	    	b   readdone           @ Vuelve al ciclo
+	    	b writeloop           @ Vuelve al ciclo
+
+writedone1:	mov R0, #1              @ Inicializa índice de la variable
+
+readloop1:	cmp R0, #2048           @ Revisa que se haga la iteración
+		beq readdone          @ Termina el ciclo si está listo
+		ldr R1, =randarray      @ Busca el arreglo
+		lsl R2, R0, #2          @ Multiplica el índice * 4 para tener el desplazamiento del arreglo
+		add R2, R1, R2          @ Pasa el elemento a R2
+		ldr R1, [R2]            @ Lee lo que tiene el arreglo
+		push {R0}               @ Respaldo del registro antes de llamar al procedimiento
+		push {R1}               @ Respaldo del registro antes de llamar al procedimiento
+		push {R2}               @ Respaldo del registro antes de llamar al procedimiento
+		mov R2, R1              @ Mueve el valor que tiene el arreglo a R2 para imprimirlo
+		mov R1, R0              @ Mueve el ínidice del arreglo a R1 para imprimirlo
+		bl  _printf             @ Llama al procedimiento que imprime
+		pop {R2}                @ Restaura registro
+		pop {R1}                @ Restaura registro
+		pop {R0}		@ Restaura registro
+		add R0, R0, #1          @ Incrementa el índice
+		b   readloop1            @ Vuelve al ciclo
 
 readdone:    	b bsort_next            @ Sale si está listo
     
@@ -66,8 +86,8 @@ _getrand:    	push {LR}               @ Respaldo al retorno
 		    /*R0 = Ubicación del arreglo, 
 		    R1 = Tamaño del arreglo*/
 
-bsort_next:	push {R0-R6,LR}	 @ Salvar registros	
-		mov R2,#1	@ R2 = Número del elemento actual
+		push {R0-R6,LR}	 @ Salvar registros
+bsort_next:	mov R2,#0	@ R2 = Número del elemento actual
                 mov R6,#0       @ R6 = Contador
 		ldr R0, =randarray
 		mov R1, #2048
